@@ -1,0 +1,65 @@
+// Símbolos não-terminais (regras sintáticas)
+program              : _definitionlist
+
+_definitionlist      : definition
+                     | definition _definitionlist
+
+?definition          : IDENTIFIER "=" "f" "(" parameterlist functionreturn ")" body -> define
+
+?functionreturn      : "returns" TYPE
+
+?body                : printexpression body
+                     | expression
+              
+printexpression      : "print" "(" expression ")" ->print
+
+parameterlist        : [ _formalparameters ] -> params
+
+_formalparameters    : idwithtype
+                     | idwithtype "," _formalparameters
+
+idwithtype           : IDENTIFIER ":" TYPE -> param
+
+TYPE                 : "integer" 
+                     | "boolean"
+
+
+?expression          : simpleexpression
+                     | simpleexpression "=" expression    -> eq
+                     | simpleexpression "<" expression    -> lt
+
+?simpleexpression    : term
+                     | term "|" simpleexpression          -> or_
+                     | term "+" simpleexpression          -> add
+                     | term "-" simpleexpression          -> sub
+
+?term                : cond                             
+                     | cond "^" term                    -> and_
+                     | cond "*" term                    -> mul
+                     | cond "/" term                    -> div
+
+?cond                : BOOLEAN
+                     | INTEGER
+                     | "~" cond                         -> not_
+                     | "-" cond                         -> neg
+                     | IDENTIFIER
+                     | IDENTIFIER "(" formalarguments ")"  -> fcall
+                     | "if" "(" expression ")" expression "else" expression
+                     | "(" expression ")"
+                
+
+?formalarguments     : (expression ("," expression)*)* -> args
+
+
+IDENTIFIER           : /[a-zA-Z$][a-zA-Z$_0-9]*/
+
+INTEGER              : /[0]|[1-9][0-9]*/
+
+BOOLEAN              : "true"
+                     | "false"
+
+COMMENT              : /[ ]*\%(.)*/
+
+%ignore " "
+%ignore "\n"
+%ignore COMMENT
